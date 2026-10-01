@@ -118,14 +118,14 @@
               </summary>
               <div class="advanced-grid">
                 <label class="check-row"><input id="emoji" type="checkbox" checked /><span>添加 Emoji</span></label>
-                <label class="check-row"><input id="udp" type="checkbox" /><span>启用 UDP</span></label>
+                <label class="select-row"><span>UDP</span><select id="udp"><option value="">跟随订阅</option><option value="true">开启</option><option value="false">关闭</option></select></label>
                 <label class="check-row"><input id="expand" type="checkbox" /><span>展开规则全文</span></label>
                 <label class="check-row"><input id="sort" type="checkbox" /><span>节点排序</span></label>
-                <label class="check-row"><input id="scv" type="checkbox" /><span>跳过证书验证</span></label>
+                <label class="select-row"><span>跳过证书验证</span><select id="scv"><option value="">跟随订阅</option><option value="true">开启（跳过验证）</option><option value="false">关闭（验证证书）</option></select></label>
                 <label class="check-row"><input id="nodeList" type="checkbox" /><span>仅输出节点列表</span></label>
                 <label class="check-row"><input id="newName" type="checkbox" checked /><span>使用新命名规则</span></label>
               </div>
-              <p class="field-hint">取消“展开规则全文”将生成 expand=false，使用远程规则引用；适用于 Clash / Surge / Quantumult X，实际输出取决于后端及客户端支持。</p>
+              <p class="field-hint">UDP 和跳过证书验证默认跟随订阅，不发送 udp / scv 参数；明确选择开启或关闭时才覆盖。取消“展开规则全文”将生成 expand=false，使用远程规则引用；适用于 Clash / Surge / Quantumult X，实际输出取决于后端及客户端支持。</p>
             </details>
           </form>
         </div>
@@ -191,6 +191,6 @@
       <span>客户端格式支持取决于转换后端版本</span>
     </footer>
 
-    <script src="./app.js?v=duohao-20261001-3"></script>
+    <script src="./app.js?v=duohao-20261001-4"></script>
   </body>
 </html>

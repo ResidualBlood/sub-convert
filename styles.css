@@ -38,7 +38,7 @@ body {
   overflow-x: hidden;
 }
 
-button, input, textarea { font: inherit; }
+button, input, textarea, select { font: inherit; }
 button { color: inherit; }
 
 .ambient {
@@ -202,6 +202,8 @@ textarea { width: 100%; resize: vertical; padding: 14px; border: 0; outline: 0; 
 .advanced-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 9px; padding: 0 14px 14px; }
 .check-row { display: flex; align-items: center; gap: 8px; color: var(--muted); cursor: pointer; font-size: 10px; }
 .check-row input { width: 14px; height: 14px; margin: 0; accent-color: var(--accent-strong); }
+.select-row { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; color: var(--muted); font-size: 10px; }
+.select-row select { min-width: 0; max-width: 100%; padding: 5px 8px; border: 1px solid var(--border); border-radius: 6px; color: var(--text); background: var(--bg); cursor: pointer; }
 
 .result-column { display: grid; gap: 18px; position: sticky; top: 20px; }
 .result-panel { padding: 26px; }

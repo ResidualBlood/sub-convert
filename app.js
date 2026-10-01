@@ -5,10 +5,10 @@ const DEFAULTS = Object.freeze({
   useConfig: true,
   clientId: "clash",
   emoji: true,
-  udp: false,
+  udp: "",
   expand: false,
   sort: false,
-  scv: false,
+  scv: "",
   nodeList: false,
   newName: true,
 });
@@ -128,10 +128,10 @@ function readState() {
     useConfig: elements.useConfig.checked,
     clientId: selectedClientId,
     emoji: elements.emoji.checked,
-    udp: elements.udp.checked,
+    udp: elements.udp.value,
     expand: elements.expand.checked,
     sort: elements.sort.checked,
-    scv: elements.scv.checked,
+    scv: elements.scv.value,
     nodeList: elements.nodeList.checked,
     newName: elements.newName.checked,
   };
@@ -144,7 +144,11 @@ function applyState(state) {
   elements.configUrl.value = merged.configUrl;
   elements.useConfig.checked = Boolean(merged.useConfig);
   selectedClientId = CLIENTS.some((client) => client.id === merged.clientId) ? merged.clientId : DEFAULTS.clientId;
-  ["emoji", "udp", "expand", "sort", "scv", "nodeList", "newName"].forEach((key) => {
+  ["udp", "scv"].forEach((key) => {
+    const value = String(merged[key]);
+    elements[key].value = ["true", "false"].includes(value) ? value : "";
+  });
+  ["emoji", "expand", "sort", "nodeList", "newName"].forEach((key) => {
     elements[key].checked = Boolean(merged[key]);
   });
   renderClients();
@@ -171,10 +175,10 @@ function buildConversionUrl(state) {
   if (state.useConfig) params.set("config", state.configUrl);
   if (client.version) params.set("ver", client.version);
   params.set("emoji", String(state.emoji));
-  params.set("udp", String(state.udp));
+  if (["true", "false"].includes(String(state.udp))) params.set("udp", String(state.udp));
   params.set("expand", String(state.expand));
   params.set("sort", String(state.sort));
-  params.set("scv", String(state.scv));
+  if (["true", "false"].includes(String(state.scv))) params.set("scv", String(state.scv));
   params.set("list", String(state.nodeList));
   params.set("new_name", String(state.newName));
   return `${getSubEndpoint(state.apiUrl)}?${params.toString()}`;
@@ -227,7 +231,7 @@ function syncConfigPreset() {
 }
 
 function saveState(state) {
-  try { localStorage.setItem(STORAGE_KEY, JSON.stringify({ ...state, settingsVersion: 3 })); } catch { /* Private mode may block storage. */ }
+  try { localStorage.setItem(STORAGE_KEY, JSON.stringify({ ...state, settingsVersion: 4 })); } catch { /* Private mode may block storage. */ }
 }
 
 function loadState() {
@@ -235,10 +239,16 @@ function loadState() {
     const saved = JSON.parse(localStorage.getItem(STORAGE_KEY));
     if (!saved || typeof saved !== "object") return DEFAULTS;
     if (saved.configUrl === LEGACY_DEFAULT_CONFIG_URL) {
-      return { ...saved, configUrl: DEFAULTS.configUrl };
+      saved.configUrl = DEFAULTS.configUrl;
     }
     // 升级时更新旧版默认值；保留订阅及其他设置。
-    if (saved.settingsVersion !== 3) return { ...saved, udp: saved.settingsVersion === 2 ? saved.udp : false, expand: false, settingsVersion: 3 };
+    if (saved.settingsVersion !== 4) {
+      const oldVersion = saved.settingsVersion;
+      if (oldVersion !== 3) saved.expand = false;
+      saved.udp = (oldVersion === 2 || oldVersion === 3) && saved.udp === true ? "true" : "";
+      saved.scv = saved.scv === true ? "true" : "";
+      saved.settingsVersion = 4;
+    }
     return saved;
   } catch {
     return DEFAULTS;
