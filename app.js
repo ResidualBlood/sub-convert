@@ -1,11 +1,12 @@
 const DEFAULTS = Object.freeze({
-  apiUrl: "https://api.wcc.best",
+  apiUrl: "https://suc.duohao.xyz",
   sourceUrls: "",
-  configUrl: "https://zbuter.github.io/sub-convert/config.ini",
+  configUrl: "https://raw.githubusercontent.com/ResidualBlood/Clash_Rules/master/Myself/config/Home.ini",
   useConfig: true,
   clientId: "clash",
   emoji: true,
-  udp: true,
+  udp: false,
+  expand: true,
   sort: false,
   scv: false,
   nodeList: false,
@@ -15,11 +16,8 @@ const DEFAULTS = Object.freeze({
 const LEGACY_DEFAULT_CONFIG_URL = "https://raw.githubusercontent.com/Zbuter/clash-config-ini/refs/heads/main/config.ini";
 
 const CONFIG_PRESETS = Object.freeze([
-  { id: "builtin", name: "内置精选", note: "本项目维护", url: DEFAULTS.configUrl, icon: "IN" },
-  { id: "acl-standard", name: "ACL4SSR 标准", note: "均衡规则", url: "https://raw.githubusercontent.com/ACL4SSR/ACL4SSR/master/Clash/config/ACL4SSR_Online.ini", icon: "AS" },
-  { id: "acl-full", name: "ACL4SSR 完整", note: "全量规则", url: "https://raw.githubusercontent.com/ACL4SSR/ACL4SSR/master/Clash/config/ACL4SSR_Online_Full.ini", icon: "AF" },
-  { id: "acl-mini", name: "ACL4SSR 精简", note: "轻量规则", url: "https://raw.githubusercontent.com/ACL4SSR/ACL4SSR/master/Clash/config/ACL4SSR_Online_Mini.ini", icon: "AM" },
-  { id: "acl-noauto", name: "ACL4SSR 无测速", note: "手动选择", url: "https://raw.githubusercontent.com/ACL4SSR/ACL4SSR/master/Clash/config/ACL4SSR_Online_Full_NoAuto.ini", icon: "AN" },
+  { id: "home", name: "Home", note: "默认 Home 配置", url: DEFAULTS.configUrl, icon: "HM" },
+  { id: "home-noad", name: "Home_NOAD", note: "使用 V6 基础模板", url: "https://raw.githubusercontent.com/ResidualBlood/Clash_Rules/master/Myself/config/Home_NOAD.ini", icon: "NA" },
   { id: "custom", name: "自定义", note: "其他公开 INI", url: "", icon: "+" },
 ]);
 
@@ -43,7 +41,7 @@ const CLIENTS = Object.freeze([
   { id: "trojan", name: "Trojan", note: "Trojan 节点", target: "trojan", icon: "TR" },
 ]);
 
-const STORAGE_KEY = "subconvert-settings-v1";
+const STORAGE_KEY = "duohao-subconvert-settings-v1";
 const $ = (selector) => document.querySelector(selector);
 const elements = {
   form: $("#converterForm"),
@@ -70,6 +68,7 @@ const elements = {
   clientCount: $("#clientCount"),
   emoji: $("#emoji"),
   udp: $("#udp"),
+  expand: $("#expand"),
   sort: $("#sort"),
   scv: $("#scv"),
   nodeList: $("#nodeList"),
@@ -130,6 +129,7 @@ function readState() {
     clientId: selectedClientId,
     emoji: elements.emoji.checked,
     udp: elements.udp.checked,
+    expand: elements.expand.checked,
     sort: elements.sort.checked,
     scv: elements.scv.checked,
     nodeList: elements.nodeList.checked,
@@ -144,7 +144,7 @@ function applyState(state) {
   elements.configUrl.value = merged.configUrl;
   elements.useConfig.checked = Boolean(merged.useConfig);
   selectedClientId = CLIENTS.some((client) => client.id === merged.clientId) ? merged.clientId : DEFAULTS.clientId;
-  ["emoji", "udp", "sort", "scv", "nodeList", "newName"].forEach((key) => {
+  ["emoji", "udp", "expand", "sort", "scv", "nodeList", "newName"].forEach((key) => {
     elements[key].checked = Boolean(merged[key]);
   });
   renderClients();
@@ -172,6 +172,7 @@ function buildConversionUrl(state) {
   if (client.version) params.set("ver", client.version);
   params.set("emoji", String(state.emoji));
   params.set("udp", String(state.udp));
+  params.set("expand", String(state.expand));
   params.set("sort", String(state.sort));
   params.set("scv", String(state.scv));
   params.set("list", String(state.nodeList));
@@ -200,7 +201,7 @@ function updateResult() {
 
 function syncApiPreset() {
   const value = elements.apiUrl.value.trim().replace(/\/+$/, "");
-  const presetValues = ["https://api.wcc.best", "https://api.dler.io"];
+  const presetValues = [DEFAULTS.apiUrl];
   const activeValue = presetValues.includes(value) ? value : "custom";
   elements.apiPresets.querySelectorAll("[data-api]").forEach((button) => {
     button.classList.toggle("active", button.dataset.api === activeValue);
@@ -226,7 +227,7 @@ function syncConfigPreset() {
 }
 
 function saveState(state) {
-  try { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); } catch { /* Private mode may block storage. */ }
+  try { localStorage.setItem(STORAGE_KEY, JSON.stringify({ ...state, settingsVersion: 2 })); } catch { /* Private mode may block storage. */ }
 }
 
 function loadState() {
@@ -236,6 +237,8 @@ function loadState() {
     if (saved.configUrl === LEGACY_DEFAULT_CONFIG_URL) {
       return { ...saved, configUrl: DEFAULTS.configUrl };
     }
+    // 首次升级取消旧版默认勾选的 UDP；保留订阅及其他设置。
+    if (saved.settingsVersion !== 2) return { ...saved, udp: false, settingsVersion: 2 };
     return saved;
   } catch {
     return DEFAULTS;
