@@ -24,7 +24,7 @@ assert.equal(url.searchParams.get("url"), "https://example.com/a?token=dummy|htt
 assert.equal(url.searchParams.get("config"), context.defaults.configUrl);
 assert.equal(url.searchParams.get("scv"), "false");
 assert.equal(url.searchParams.get("udp"), "false");
-assert.equal(url.searchParams.get("expand"), "true");
+assert.equal(url.searchParams.get("expand"), "false");
 vm.runInContext(`globalThis.compact = buildConversionUrl({ ...DEFAULTS, sourceUrls: "https://example.com/a", expand: false });`, context);
 assert.equal(new URL(context.compact).searchParams.get("expand"), "false");
 assert.equal(elements.get("#udp").checked, false);

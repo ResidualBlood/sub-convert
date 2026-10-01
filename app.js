@@ -6,7 +6,7 @@ const DEFAULTS = Object.freeze({
   clientId: "clash",
   emoji: true,
   udp: false,
-  expand: true,
+  expand: false,
   sort: false,
   scv: false,
   nodeList: false,
@@ -227,7 +227,7 @@ function syncConfigPreset() {
 }
 
 function saveState(state) {
-  try { localStorage.setItem(STORAGE_KEY, JSON.stringify({ ...state, settingsVersion: 2 })); } catch { /* Private mode may block storage. */ }
+  try { localStorage.setItem(STORAGE_KEY, JSON.stringify({ ...state, settingsVersion: 3 })); } catch { /* Private mode may block storage. */ }
 }
 
 function loadState() {
@@ -237,8 +237,8 @@ function loadState() {
     if (saved.configUrl === LEGACY_DEFAULT_CONFIG_URL) {
       return { ...saved, configUrl: DEFAULTS.configUrl };
     }
-    // 首次升级取消旧版默认勾选的 UDP；保留订阅及其他设置。
-    if (saved.settingsVersion !== 2) return { ...saved, udp: false, settingsVersion: 2 };
+    // 升级时更新旧版默认值；保留订阅及其他设置。
+    if (saved.settingsVersion !== 3) return { ...saved, udp: saved.settingsVersion === 2 ? saved.udp : false, expand: false, settingsVersion: 3 };
     return saved;
   } catch {
     return DEFAULTS;
